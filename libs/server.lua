@@ -29,7 +29,17 @@ function decodeMessage(buf)
   local flags  = toBits(bytes[1])
 
   if flags[4] == 1 then
-    return 1
+    return 2
+  end
+  if flags[5] == 1 and flags[6] == 0 and flags[7] == 1 and flags[8] == 0 then
+    flags[6] = 1
+    flags[7] = 0
+    bytes[1] = tonumber(table.concat(flags, ""), 2)
+    local buff = {}
+    for k,v in pairs(bytes) do
+      buff = buff .. string.char(v)
+    end
+    return 1, buff
   end
   if flags[1] == 0 then
     print("WebSocket Error: Message Fragmentation not supported.")
@@ -128,11 +138,13 @@ return function(port)
                       .."Upgrade: websocket\r\n"
                       .."Sec-WebSocket-Accept: " .. responseKey .. "\r\n"
                       .."\r\n"
-        client:write(response, function() end)
+        client:write(response)
       else
-        local message = decodeMessage(c)
-        if message == 1 then
+        local message, v = decodeMessage(c)
+        if message == 2 then
           this:call("disconnect", client)
+        elseif message == 1 then
+          client:write(v)
         elseif message then
           this:call("data", {client, message})
         else
