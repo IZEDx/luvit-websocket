@@ -1,10 +1,12 @@
 local net = require('net')
 local b64 = require('./base64.lua')
 local sha1 = require('./sha1.lua')
-local string = require('string')
 local table = require('table')
 local math = require('math')
 local bit = require('bit')
+local table = require('table')
+local string = require('string')
+require('./table.lua')(table)
 require('./string.lua')(string)
 
 function toBits(num)
@@ -114,9 +116,67 @@ return function(port)
     end
   end
 
+  this.clients = {}
+
   net.createServer(function (client)
     client:on("data", function(c)
-      if c:sub(1, 3) == "GET" then
+
+      client.send = function(client, msg)
+        local flags = "10000001"
+        local bytes = {tonumber(flags, 2), #msg}
+        if bytes[2] > 65535 then
+          local bits = table.reverse(toBits(bytes[2]))
+          local zeros = 64 - #bits
+          local size = ""
+          for i = 1, zeros do
+            size = size .. "0"
+          end
+          for k,v in pairs(bits) do
+            size = size .. v
+          end
+          bytes[3] = "" bytes[4] = "" bytes[5] = "" bytes[6] = ""
+          bytes[7] = "" bytes[8] = "" bytes[9] = "" bytes[10] = ""
+          local b = 0
+          for bit = 1, 64 do
+            bytes[3 + b] = bytes[3 + b] .. size:sub(bit,bit)
+            if bit - 8 * b >= 8 then
+              bytes[3+b] = tonumber(bytes[3+b], 2)
+              b = b + 1
+            end
+          end
+          bytes[2] = 255 - 128
+        elseif bytes[2] > 125 then
+          local bits = table.reverse(toBits(bytes[2]))
+          local zeros = 16 - #bits
+          local size = ""
+          for i = 1, zeros do
+            size = size .. "0"
+          end
+          for k,v in pairs(bits) do
+            size = size .. v
+          end
+          bytes[3] = "" bytes[4] = ""
+          local b = 0
+          for bit = 1, 16 do
+            bytes[3 + b] = bytes[3 + b] .. size:sub(bit,bit)
+            if bit - 8 * b >= 8 then
+              bytes[3+b] = tonumber(bytes[3+b], 2)
+              b = b + 1
+            end
+          end
+          bytes[2] = 254 - 128
+        end
+        for i = 1, #msg do
+          table.insert(bytes, string.byte(msg:sub(i,i)))
+        end
+        local str = ""
+        for k,v in pairs(bytes) do
+          str = str .. string.char(v)
+        end
+        client:write(str)
+      end
+
+      if c:sub(1, 3) == "GET" then -- Handshake
         local lines = c:split('\r\n')
         local title = lines[1]
         lines[1] = nil
@@ -129,7 +189,6 @@ return function(port)
           end
         end
 
-        this:call("connect", client)
 
         local responseKey = data["Sec-WebSocket-Key"] .. '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
         responseKey = b64.encode(sha1.binary(responseKey))
@@ -139,10 +198,20 @@ return function(port)
                       .."Sec-WebSocket-Accept: " .. responseKey .. "\r\n"
                       .."\r\n"
         client:write(response)
+
+        this:call("connect", {client})
+        table.insert(this.clients, client)
+        for k,v in pairs(this.clients) do
+          if v == client then
+            client.id = k
+          end
+        end
+
       else
         local message, v = decodeMessage(c)
         if message == 2 then
-          this:call("disconnect", client)
+          this:call("disconnect", {client})
+          this.clients[client.id or 0] = nil
         elseif message == 1 then
           client:write(v)
         elseif message then

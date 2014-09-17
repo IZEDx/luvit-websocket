@@ -30,12 +30,12 @@ http.createServer(function (req, res)
   res:finish(body)
 end):listen(80)
 
-
 ----------------------------------------------- WebSocket Server
 local WS = WebSocket.server(1734)
 
 WS:on('connect', function(client)
 		print("Client connected.")
+		client:send("vfx62HIRNLgRLhNrgWiYK0b3VzztgzscNdRJoNYObNUI2nQ8MNDd87h7OrFenzvF83QD0MKTFpKoscs6C7")
 end)
 
 WS:on('data', function(client, message)
