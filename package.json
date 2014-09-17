@@ -1,7 +1,7 @@
 {
   "name": "luvit-websocket",
   "version": "0.0.1",
-  "description": "WebSocket api for luvit",
+  "description": "WebSocket API for luvit",
   "keywords": "luvit, utils, api, websocket, socket",
   "homepage": "http://b42.in/",
   "bugs": { "url" : "https://github.com/b42-coding/luvit-websocket/issues", "email" : "admin@i-zed.net" },
