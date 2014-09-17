@@ -34,7 +34,7 @@ end):listen(80)
 ----------------------------------------------- WebSocket Server
 local WS = WebSocket.server(1734)
 
-WS:on('connect', function(client, message)
+WS:on('connect', function(client)
 		print("Client connected.")
 end)
 
@@ -42,6 +42,6 @@ WS:on('data', function(client, message)
 		print(message)
 end)
 
-WS:on('disconnect', function(client, message)
+WS:on('disconnect', function(client)
 		print("Client disconnected.")
 end)
