@@ -124,47 +124,17 @@ return function(port)
       client.send = function(client, msg)
         local flags = "10000001"
         local bytes = {tonumber(flags, 2), #msg}
-        if bytes[2] > 65535 then
-          local bits = table.reverse(toBits(bytes[2]))
-          local zeros = 64 - #bits
-          local size = ""
-          for i = 1, zeros do
-            size = size .. "0"
+        if bytes[2] >= 65536 then
+          local length = bytes[2]
+          for i = 10, 3, -1 do
+            bytes[i] = band(length, 0xFF)
+            length = rshift(length, 8)
           end
-          for k,v in pairs(bits) do
-            size = size .. v
-          end
-          bytes[3] = "" bytes[4] = "" bytes[5] = "" bytes[6] = ""
-          bytes[7] = "" bytes[8] = "" bytes[9] = "" bytes[10] = ""
-          local b = 0
-          for bit = 1, 64 do
-            bytes[3 + b] = bytes[3 + b] .. size:sub(bit,bit)
-            if bit - 8 * b >= 8 then
-              bytes[3+b] = tonumber(bytes[3+b], 2)
-              b = b + 1
-            end
-          end
-          bytes[2] = 255 - 128
-        elseif bytes[2] > 125 then
-          local bits = table.reverse(toBits(bytes[2]))
-          local zeros = 16 - #bits
-          local size = ""
-          for i = 1, zeros do
-            size = size .. "0"
-          end
-          for k,v in pairs(bits) do
-            size = size .. v
-          end
-          bytes[3] = "" bytes[4] = ""
-          local b = 0
-          for bit = 1, 16 do
-            bytes[3 + b] = bytes[3 + b] .. size:sub(bit,bit)
-            if bit - 8 * b >= 8 then
-              bytes[3+b] = tonumber(bytes[3+b], 2)
-              b = b + 1
-            end
-          end
-          bytes[2] = 254 - 128
+          bytes[2] = 127
+        elseif bytes[2] >= 126 then
+          bytes[3] = bit.band(bit.rshift(bytes[2], 8), 0xFF)
+          bytes[4] = bit.band(bytes[2], 0xFF)
+          bytes[2] = 126
         end
         for i = 1, #msg do
           table.insert(bytes, string.byte(msg:sub(i,i)))
