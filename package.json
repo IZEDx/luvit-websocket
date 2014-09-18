@@ -1,6 +1,6 @@
 {
   "name": "luvit-websocket",
-  "version": "0.0.1b",
+  "version": "0.0.1c",
   "description": "WebSocket API for luvit",
   "keywords": "luvit, utils, api, websocket, socket",
   "homepage": "http://b42.in/",
