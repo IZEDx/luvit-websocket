@@ -56,11 +56,11 @@ function decodeMessage(buf)
     length = bytes[2] - 128
     bytes[2] = nil
     offset = 2
-  elseif bytes[2] == 126 then
+  elseif (bytes[2]-128) == 126 then
     length = tonumber(string.format("%x%x", bytes[3], bytes[4]), 16)
     bytes[2] = nil    bytes[3] = nil    bytes[4] = nil
     offset = 2 + 2
-  elseif bytes[2] == 127 then
+  elseif (bytes[2]-128) == 127 then
     length = tonumber(string.format("%x%x%x%x%x%x%x%x", bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10]), 16)
     bytes[2] = nil  bytes[3] = nil  bytes[4] = nil  bytes[5] = nil    bytes[6] = nil    bytes[7] = nil  bytes[8] = nil    bytes[9] = nil    bytes[10] = nil
     offset = 2 + 8
