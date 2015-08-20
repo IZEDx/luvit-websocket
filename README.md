@@ -6,11 +6,6 @@ Websocket Library for Luvit.io 2.
 In the current version luvit-websocket only supports the websocket standard [RFC 6455](http://tools.ietf.org/html/rfc6455),
 thus it will only be able to handle connections from Chrome 16, Firefox 11, IE 10 and above.
 
-Installation:
-============
-You can use [npm](https://www.npmjs.org/) to install luvit-websocket:
-> npm install luvit-websocket
-
 Usage:
 ============
 ```lua
