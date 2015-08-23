@@ -14,7 +14,8 @@ string.split = function(inputstr, sep)
         sep = "%s"
     end
 
-    local t={} ; i=1
+    local t={}
+    local i=1
     for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
         t[i] = str
         i = i + 1
@@ -22,49 +23,39 @@ string.split = function(inputstr, sep)
     return t
 end
 
-function toBits(num)
-    -- returns a table of bits, least significant first.
-    local t={} -- will contain the bits
-    while num>0 do
-        rest=math.fmod(num,2)
-        t[#t+1]=rest
-        num=(num-rest)/2
-    end
-    return t
-end
-
-exports.disassemblePacket = function(buffer)
+exports.disassemblePacket = function(buffer)s
     local bytemap = bytemap.fromString(buffer)
 
 
     -- flag evaluation
     local bitmap = bitmap.fromNumber(bytemap[1])
-  local flags  = toBits(bytemap[1])
 
-  for k,v in pairs(flags) do
-    print(k, v, bitmap[k])
-  end
-
-
-    local fin = bitmap[1]
-    local rsv1 = bitmap[2]; rsv2 = bitmap[3]; rsv3 = bitmap[4]
+    local fin = bitmap:isSet(1);
+    local rsv1 = bitmap:isSet(2); rsv2 = bitmap:isSet(3); rsv3 = bitmap:isSet(4)
     local opcode = tonumber(bitmap[5] .. bitmap[6] .. bitmap[7] .. bitmap[8], 2)
-    print("Flags: ", fin, rsv1, rsv2, rsv3, opcode)
+
+    -- message fragmentation check
     if not fin then
-        return print("WebSocket Error: Message Fragmentation not supported.")
+        print("WebSocket Error: Message Fragmentation not supported.")
+        return
     end
 
-    if bitmap[4] then return 2 end
+    -- client request close
+    if opcode == 8 then
+        return 2
+    end
 
-    if bitmap:areSet(5,7) and bitmap:areNotSet(6,8) then
-        bitmap[6] = true
+    -- ping - pong
+    if opcode == 9 then
+        bitmap[8] = true
         bitmap[7] = false
         bytemap[1] = bitmap:toNumber()
         return 1, bytemap:toString()
     end
 
-    bytemap:popStart()
 
+    -- remove flags from bytemap
+    bytemap:popStart()
 
     -- get packet size (needed for message fragmentation later on, sits inbetween so get it, why not)
     -- need to know where to cut off anyway
@@ -80,11 +71,20 @@ exports.disassemblePacket = function(buffer)
 
     -- get mask
     local mask = {bytemap:get(1,2,3,4)}
+
+    -- remove mask from bytemap
     bytemap:popStart(4)
 
+    -- check if the tcp handler missed to push something
+    if length > #bytemap.bytes then
+        return 3
+    end
+
+    -- finally decode and return
     local ret = ""
     bytemap:forEach(function(k,v)
-        ret = ret .. string.char(bit.bxor(mask[(k % 4)+1], v))
+        local i = k % 4
+        ret = ret .. string.char(bit.bxor(mask[i > 0 and i or 4], v))
     end)
 
     return ret
@@ -102,8 +102,8 @@ exports.assemblePacket = function(buffer)
         end
         bytemap[2] = 127
     elseif bytemap[2] >= 126 then
-        bytemap[4] = bit.band(bit.rshift(bytemap[2], 8), 0xFF)
-        bytemap[3] = bit.band(bytemap[2], 0xFF)
+        bytemap[4] = bit.band(bytemap[2], 0xFF)
+        bytemap[3] = bit.band(bit.rshift(bytemap[2], 8), 0xFF)
         bytemap[2] = 126
     end
     for i = 1, #buffer do

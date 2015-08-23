@@ -9,7 +9,10 @@ server:on("connect", function(client)
 end)
 
 server:on("data", function(client, message)
+	print("New data from client ", client)
 	print(message)
+	print("Responding by mirroring")
+	client:send(message)
 end)
 
 server:on("disconnect", function(client)

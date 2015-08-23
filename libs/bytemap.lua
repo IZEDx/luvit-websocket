@@ -91,7 +91,6 @@ exports.new = function(ta)
         for i = 1, c do
             hex = hex .. "%x"
         end
-        print(string.format(hex, unpack(t)))
         return tonumber(string.format(hex, unpack(t)), 16)
     end
     t.get = function(self, ...)

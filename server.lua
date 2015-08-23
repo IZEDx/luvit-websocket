@@ -34,6 +34,8 @@ exports.new = function(func)
 	end
 
 	t.server = net.createServer(function(client)
+		client.oldBuffer = ""
+
 		client:on("data", function(c)
 			client.send = function(self, msg)
 				client:write(wsu.assemblePacket(msg))
@@ -50,17 +52,20 @@ exports.new = function(func)
 		          end
 		        end
 			else
-				local message, v = wsu.disassemblePacket(c)
-				print(message, v)
-				if message == 2 then
+				local message, v = wsu.disassemblePacket(client.oldBuffer .. c)
+				if message == 3 then
+					client.oldBuffer = client.oldBuffer .. c
+				elseif message == 2 then
 					t:call("disconnect", client)
 					t.clients[client.id or 0] = nil
 				elseif message == 1 then
 					client:write(v)
+					client.oldBuffer = ""
 				elseif message then
 					t:call("data", client, message)
+					client.oldBuffer = ""
 				else 
-					print("WebSocket Error: Could not parse message: " .. c)
+					print("WebSocket Error: Could not parse message.")
 				end
 			end
 		end)

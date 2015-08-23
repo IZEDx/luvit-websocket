@@ -8,7 +8,7 @@ local bit = require('bit')
 local mt = {}
 
 mt.__index = function(self, k)
-    return rawget(self, k) or self:isSet(k)
+    return rawget(self, k) or self.bits[k] or 0
 end
 mt.__newindex = function(self, k, v)
     if tonumber(k) then
@@ -18,22 +18,12 @@ mt.__newindex = function(self, k, v)
     end
 end
 
-function toBits(num)
-    -- returns a table of bits, least significant first.
-    local t={} -- will contain the bits
-    while num>0 do
-        rest=math.fmod(num,2)
-        t[#t+1]=rest
-        num=(num-rest)/2
-    end
-    return t
-end
 exports.new = function(ta)
     local t={} 
     t.bits = ta or {}
 
     t.isSet = function(self, index)
-        return self.bits[index]
+        return self.bits[index] == 1
     end
 
     t.set = function(self, index, value)
