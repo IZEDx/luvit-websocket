@@ -12,6 +12,12 @@ Also it does not yet support Message Fragmentation.
 
 Besides that, using a simple WebSocket connection in a moden browser should work fine.
 
+Installation:
+============
+Using lit you can simply add it to the dependencies of your projects or install it by doing:
+> lit install b42nk/websocket
+
+
 Usage:
 ============
 ```lua
