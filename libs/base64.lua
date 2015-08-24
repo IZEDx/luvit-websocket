@@ -7,6 +7,8 @@
 local string = require('string')
 
 ---------------------------------------------------------
+--- START ORIGINAL
+---------------------------------------------------------
 
 -- Lua 5.1+ base64 v3.0 (c) 2009 by Alex Kloss <alexthkloss@web.de>
 -- licensed under the terms of the LGPL2
@@ -46,4 +48,12 @@ base64.decode = function(data)
     end))
 end
 
-return base64
+---------------------------------------------------------
+--- END ORIGINAL
+---------------------------------------------------------
+
+exports.encode = base64.encode
+exports.decode = base64.decode
+exports.name = "base64"
+exports.version = "v3.0"
+exports.author = "Alex Kloss"

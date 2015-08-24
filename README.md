@@ -1,7 +1,7 @@
-luvit-websocket
+WebSocket for luvit2
 ===============
 
-Websocket Library for Luvit.io.
+Websocket Library for Luvit.io 2.
 
 Server works, client is still a WIP.
 
@@ -12,21 +12,16 @@ Also it does not yet support Message Fragmentation.
 
 Besides that, using a simple WebSocket connection in a moden browser should work fine.
 
-Installation:
-============
-You can use [npm](https://www.npmjs.org/) to install luvit-websocket:
-> npm install luvit-websocket
-
 Usage:
 ============
 ```lua
-  local WebSocket = require('luvit-websocket')
+  local WebSocket = require('websocket')
 
-  local WS = WebSocket.server(1734)
+  local WS = WebSocket.server.new():listen(1734)
 
   WS:on('connect', function(client)
       print("Client connected.")
-      client:send("random message")
+      client:send("Welcome!")
   end)
 
   WS:on('data', function(client, message)

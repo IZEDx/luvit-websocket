@@ -1,5 +1,5 @@
 ---------------------------------------------------------
---- md5 library in pure lua
+--- sha1 library in pure lua
 --- credits go to the original creator
 ---------------------------------------------------------
 
@@ -307,4 +307,14 @@ end
 
 setmetatable(sha1, {__call = function(_,msg) return sha1.sha1(msg) end })
 
-return sha1
+
+---------------------------------------------------------
+--- end of original code
+---------------------------------------------------------
+
+exports.name = "sha1"
+exports.version = "0.5.0"
+exports.author = "Enrique García Cota + Eike Decker + Jeffrey Friedl"
+for k,v in pairs(sha1) do
+  exports[k] = v
+end
