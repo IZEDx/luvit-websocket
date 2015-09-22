@@ -23,7 +23,7 @@ string.split = function(inputstr, sep)
     return t
 end
 
-exports.disassemblePacket = function(buffer)s
+exports.disassemblePacket = function(buffer)
     local bytemap = bytemap.fromString(buffer)
 
 
